@@ -92,7 +92,7 @@ def scrape_reviews(url, n, filename, driver):
     #menutup browser
     driver.quit()
 
-    print("Menyimpan ke file csv!!!!")
+    print(f"Menyimpan ke {filename} !!!!")
     # menyimpan ke file csv
     file = open(filename, "a", newline="")
     csvwriter = csv.DictWriter(file, fieldnames=("Date", "Rating", "Content"), delimiter=";")
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     print("Mengambil review dan rating hotel dari web tripadvisor")
     main_url = input("Masukkan url: ")
     pages = int(input("Jumlah halaman: "))
-    filename = input("Masukkan nama fil: ")
+    filename = input("Masukkan nama file: ")
     # mengatur mode webdriver
     servis = Service(executable_path=r"driver/geckodriver.exe")
     browser = webdriver.Firefox(service=servis)
