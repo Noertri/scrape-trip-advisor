@@ -1,11 +1,13 @@
 import csv
 import re
 import time
+import os.path as osp
 from datetime import datetime
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.service import Service
+# from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
@@ -36,7 +38,7 @@ def scrape_reviews(url, n, filename, driver):
         for container in containers:
             #tanggal review
             month_pattern = r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|Yesterday|yesterday)\s?(\d{,4})?"
-            date_tag = container.select_one("div.bcaHz span")
+            date_tag = container.select_one("div[data-test-target='HR_CC_CARD'] div.cRVSd span")
             date_txt = date_tag.get_text(strip=True, separator=" ")
             date_pattern = re.compile(month_pattern)
             month_year = date_pattern.search(date_txt)
@@ -55,8 +57,8 @@ def scrape_reviews(url, n, filename, driver):
                 date_review = datetime.strptime(month + " " + year, "%b %Y")
 
                 #isi review
-                content_tag = container.select_one("q.XllAv.H4._a")
-                content_txt = content_tag.get_text(strip=True)
+                content_tag = container.select_one("div[data-test-target='HR_CC_CARD'] q span")
+                content_txt = content_tag.get_text(strip=True, separator=" ")
 
                 #untuk membersihkan teks dari emoji atau karakter yg tidak perlu
                 ascii_pattern = re.compile(r"[\x21-\x7E\x80-\xFF]+")
@@ -92,35 +94,24 @@ def scrape_reviews(url, n, filename, driver):
 
     print("Menyimpan ke file csv!!!!")
     # menyimpan ke file csv
-    file = open(filename, "w", newline="")
+    file = open(filename, "a", newline="")
     csvwriter = csv.DictWriter(file, fieldnames=("Date", "Rating", "Content"), delimiter=";")
-    csvwriter.writeheader()
+
+    if not osp.isfile(filename):
+        csvwriter.writeheader()
+
     for result in results:
         csvwriter.writerow(result)
     file.close()
     print("Berhasil...")
 
 
-# mengatur mode webdriver
-options = Options()
-# options.add_argument('--disable-extension')
-options.add_experimental_option('excludeSwitches', ['enable-logging'])
-options.page_load_strategy = 'eager'
-options.add_experimental_option("detach", True)
-browser = webdriver.Chrome(executable_path="chromedriver.exe", options=options)
-
-#Hotel sterling mussoorie
-scrape_reviews(
-        url="https://www.tripadvisor.com/Hotel_Review-g297689-d1149675-Reviews-Sterling_Mussoorie-Mussoorie_Dehradun_District_Uttarakhand.html",
-        n=12,
-        filename="hotel_sterling_mussoorie.csv",
-        driver=browser
-)
-
-#Hotel Ramada
-# scrape_reviews(
-#     url="https://www.tripadvisor.com/Hotel_Review-g297689-d627080-Reviews-Ramada_by_Wyndham_Mussoorie_Mall_Road-Mussoorie_Dehradun_District_Uttarakhand.html",
-#     n=20,
-#     filename="hotel_ramada.csv",
-#     driver=browser
-# )
+if __name__ == "__main__":
+    print("Mengambil review dan rating hotel dari web tripadvisor")
+    main_url = input("Masukkan url: ")
+    pages = int(input("Jumlah halaman: "))
+    filename = input("Masukkan nama fil: ")
+    # mengatur mode webdriver
+    servis = Service(executable_path=r"driver/geckodriver.exe")
+    browser = webdriver.Firefox(service=servis)
+    scrape_reviews(url=main_url, n=pages, filename=filename, driver=browser)
