@@ -1,15 +1,15 @@
 import csv
+import os.path as osp
 import re
 import time
-import os.path as osp
 from datetime import datetime
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.firefox.service import Service
 # from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.service import Service
 
 
 def scrape_reviews(url, n, filename, driver):
